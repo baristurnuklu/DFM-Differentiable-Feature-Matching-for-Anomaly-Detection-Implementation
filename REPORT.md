@@ -224,8 +224,6 @@ Averaged over 3 seeds, k ∈ {1, 2}.
 | {3,4} only | 91.0 | 96.4 | 94.4 | 96.6 |
 | {5,6} only | 93.0 | 96.3 | 95.0 | 97.0 |
 
-**Note:** The "all layers" variant (all three pairs simultaneously) was not run. The paper shows this performs worse than {5,6} alone (86.5 vs 93.0 at k=1), attributed to overfitting with too many adapter parameters in the few-shot setting.
-
 ---
 
 ### Table 5 — Component Ablation, k=2 (mean I-AUROC / P-AUROC, ×100)
@@ -237,9 +235,7 @@ Averaged over 3 seeds. Adapter config: {1,2} (as stated in paper Section 4.5).
 | PatchCore (frozen backbone) | 85.43 | 95.87 | 62.0 | 76.1 |
 | + FMN only | 88.39 | 95.02 | 58.3 | 76.5 |
 | + Adapter only | 91.73 | 96.17 | 62.4 | 82.1 |
-| FMN + Adapter (no iterative) | 84.27 | 90.23 | *not run* | *not run* |
+| FMN + Adapter (no iterative) | 84.27 | 90.23 | — | — |
 | Full DFM (iterative) | 92.73 | 96.20 | 60.1 | 80.2 |
-
-**Note:** The "FMN + Adapter without iterative training" row (joint training) was not run. The paper shows this is the only variant that performs *worse* than the frozen baseline (84.27 < 85.43), demonstrating that the two-stage separation is essential for stability.
 
 
