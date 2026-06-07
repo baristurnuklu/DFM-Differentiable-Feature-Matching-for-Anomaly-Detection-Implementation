@@ -1,9 +1,7 @@
 # DFM: Differentiable Feature Matching for Anomaly Detection
 ## Implementation Report
 
-**Paper:** Wu et al., "DFM: Differentiable Feature Matching for Anomaly Detection," CVPR 2025  
-**Course:** METU MSc Deep Learning  
-**Hardware:** Apple M4 Air (MPS GPU)
+**Paper:** Wu et al., "DFM: Differentiable Feature Matching for Anomaly Detection," CVPR 2025
 
 ---
 
@@ -268,7 +266,7 @@ Averaged over 3 seeds. Adapter config: {1,2} (as stated in paper Section 4.5).
 | # | Difference | Paper | Ours |
 |---|---|---|---|
 | 1 | **Training steps** | Not stated; Figure 3 shows curves still rising at 50 epochs | T=5 rounds, E1=10, E2=10 (100 total steps) — too few |
-| 2 | **Hardware** | NVIDIA RTX-3090 | Apple M4 Air MPS (~7× slower) |
+| 2 | **Hardware** | NVIDIA RTX-3090 | Apple Silicon MPS (~7× slower) |
 | 3 | **Hyperparameters not disclosed** | T, E1, E2, LR, β exact value, λ_detec, λ_seg — none stated in paper | Assumed: T=5, E=10, LR=1e-4, β=0.9, λ=1.0 |
 | 4 | **Adapter layer ordering** | Deeper layers better: {5,6} > {3,4} > {1,2} (Table 3) | Reversed: {1,2} > {3,4} > {5,6} — caused by insufficient training |
 | 5 | **FMN-only variant** | +3pp I-AUROC over PatchCore baseline | −3.7pp (FMN not converging in 10 steps) |
@@ -283,7 +281,7 @@ Averaged over 3 seeds. Adapter config: {1,2} (as stated in paper Section 4.5).
 ## 8. Implementation Challenges
 
 ### MPS Compatibility
-Apple's MPS backend does not support HSV colour operations. CutPaste's colour jitter runs on CPU. A CPU copy of the training images is cached once before the loop — MPS→CPU transfer happens once, not once per gradient step.
+Apple Silicon's MPS backend does not support HSV colour operations. CutPaste's colour jitter runs on CPU. A CPU copy of the training images is cached once before the loop — MPS→CPU transfer happens once, not once per gradient step.
 
 ### Squared vs L2 Distance
 Initial implementation computed squared L2. The paper Eq. 3 specifies actual L2 distance. Fixed with `.sqrt()` and `clamp(min=1e-6)` to prevent infinite gradients when two L2-normalised vectors are identical.
