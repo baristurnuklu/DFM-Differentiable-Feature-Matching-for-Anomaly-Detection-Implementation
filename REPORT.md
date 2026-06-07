@@ -26,7 +26,7 @@ S           = MinPooling(Sim)              (paper Eq. 4)
 s           = MaxPooling(S)               (paper Eq. 5)
 ```
 
-Two learnable modulate layers (identity-initialised) are inserted around the pooling operations, making the full pipeline end-to-end differentiable.
+Two learnable modulate layers (identity-initialised) are inserted before each pooling operation, making the full pipeline end-to-end differentiable.
 
 ### Two-Stage Iterative Training
 Jointly training everything at once causes instability (paper Table 5: joint training = 84.27% I-AUROC, *worse* than the 85.43% frozen baseline). The paper uses alternating stages:
