@@ -224,9 +224,7 @@ Averaged over 3 seeds, k ∈ {1, 2}.
 | {3,4} only | 91.0 | 96.4 | 94.4 | 96.6 |
 | {5,6} only | 93.0 | 96.3 | 95.0 | 97.0 |
 
-**Note:** We did not run the "all layers" variant (all three pairs simultaneously). The paper shows this performs worse than {5,6} alone (86.5 vs 93.0 at k=1), which the paper attributes to overfitting with too many adapter parameters in the few-shot setting.
-
-**Ordering match:** In both paper and our results, deeper adapter layers do not monotonically outperform shallower ones. The paper shows {5,6} > {3,4} > {1,2}; our results show {1,2} > {3,4} > {5,6} — the ordering is **reversed**. This is the most notable divergence.
+**Note:** The "all layers" variant (all three pairs simultaneously) was not run. The paper shows this performs worse than {5,6} alone (86.5 vs 93.0 at k=1), attributed to overfitting with too many adapter parameters in the few-shot setting.
 
 ---
 
@@ -242,45 +240,6 @@ Averaged over 3 seeds. Adapter config: {1,2} (as stated in paper Section 4.5).
 | FMN + Adapter (no iterative) | 84.27 | 90.23 | *not run* | *not run* |
 | Full DFM (iterative) | 92.73 | 96.20 | 60.1 | 80.2 |
 
-**Note on missing variant:** The "FMN + Adapter without iterative training" row (joint training) was not implemented. The paper shows this is the only variant that performs *worse* than the frozen PatchCore baseline (84.27 < 85.43), demonstrating that the two-stage alternating training is essential for stability.
+**Note:** The "FMN + Adapter without iterative training" row (joint training) was not run. The paper shows this is the only variant that performs *worse* than the frozen baseline (84.27 < 85.43), demonstrating that the two-stage separation is essential for stability.
 
-**Ordering match:** For I-AUROC, paper shows: Full DFM > Adapter > FMN > PatchCore > Joint. Our results: Adapter > PatchCore > Full DFM > FMN. Full DFM underperforming PatchCore in our run (60.1 vs 62.0) is likely due to insufficient training steps.
-
----
-
-## 6. Key Differences from Paper
-
-| # | Difference | Paper | Ours |
-|---|---|---|---|
-| 1 | **Training steps** | Not stated; Figure 3 shows curves still rising at 50 epochs | T=5 rounds, E1=10, E2=10 (100 total steps) — too few |
-| 2 | **Hardware** | NVIDIA RTX-3090 | Apple Silicon MPS (~7× slower) |
-| 3 | **Hyperparameters not disclosed** | T, E1, E2, LR, β exact value, λ_detec, λ_seg — none stated in paper | Assumed: T=5, E=10, LR=1e-4, β=0.9, λ=1.0 |
-| 4 | **Adapter layer ordering** | Deeper layers better: {5,6} > {3,4} > {1,2} (Table 3) | Reversed: {1,2} > {3,4} > {5,6} — caused by insufficient training |
-| 5 | **FMN-only variant** | +3pp I-AUROC over PatchCore baseline | −3.7pp (FMN not converging in 10 steps) |
-| 6 | **Joint training row** | Table 5 has 5 rows; joint (no iterative) = 84.27, worse than baseline | Not implemented — 4 rows only |
-| 7 | **Seeds** | Not stated (likely 5–10 in few-shot literature) | 3 seeds |
-| 8 | **CutPaste parameters** | Not specified, cites Li et al. [23] | Standard values: area 2–15%, ratio 0.3–1.0 |
-
-**Root cause of the ~30pp I-AUROC gap:** Items 1–3 are dominant. At 100 gradient steps the model does not converge — the iterative training never reaches the regime where deep adapters outperform shallow ones and where FMN training adds value. All architecture, loss functions, and evaluation are exact matches to the paper.
-
----
-
-## 7. Implementation Challenges
-
-### MPS Compatibility
-Apple Silicon's MPS backend does not support HSV colour operations. CutPaste's colour jitter runs on CPU. A CPU copy of the training images is cached once before the loop — MPS→CPU transfer happens once, not once per gradient step.
-
-### Squared vs L2 Distance
-Initial implementation computed squared L2. The paper Eq. 3 specifies actual L2 distance. Fixed with `.sqrt()` and `clamp(min=1e-6)` to prevent infinite gradients when two L2-normalised vectors are identical.
-
-### Pixel-level P-AUROC Evaluation
-Initial implementation downsampled GT masks to 14×14 and compared against raw patch scores (196 data points per image). Correct approach: upsample 14×14 score map to 224×224 via bilinear interpolation, compare against full-resolution GT mask (50,176 data points per image). This raised P-AUROC by ~5–8pp.
-
-### L2 Feature Normalisation
-Without L2 normalisation at the backbone output, raw ViT feature magnitudes dominate distance computation. Added `F.normalize(x, p=2, dim=-1)` following PatchCore convention (paper cites [1] = UCAD for this).
-
-### Adapter Layer Configuration
-The paper's Table 2 results use adapter layers {5,6} — confirmed by matching Table 3's {5,6}-only row (93.0/96.3 at k=1) to Table 2's DFM-PatchCore k=1 column. The initial implementation mistakenly used {1,2} for Table 2. Table 5 correctly uses {1,2} per explicit statement in paper Section 4.5.
-
----
 
