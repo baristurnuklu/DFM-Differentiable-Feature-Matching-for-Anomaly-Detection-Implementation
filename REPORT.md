@@ -144,20 +144,7 @@ All metrics averaged over 3 random seeds per (category, k) combination.
 
 ---
 
-## 5. Implementation Status
-
-| Experiment | Status | Adapter config |
-|---|---|---|
-| Table 2 — k=1 | Done | {5,6} (from Table 3 data) |
-| Table 2 — k=2 | Done | {5,6} (from Table 3 data) |
-| Table 2 — k=4 | Done | {5,6} |
-| Table 2 — k=8 | Done | {5,6} |
-| Table 3 — all adapter configs, k=1,2 | Done | {1,2}, {3,4}, {5,6} |
-| Table 5 — component ablation, k=2 | Done | {1,2} (paper-specified) |
-
----
-
-## 6. Results
+## 5. Results
 
 ### Table 2 — Few-shot I-AUROC / P-AUROC on MVTec AD (adapter {5,6})
 
@@ -261,7 +248,7 @@ Averaged over 3 seeds. Adapter config: {1,2} (as stated in paper Section 4.5).
 
 ---
 
-## 7. Key Differences from Paper
+## 6. Key Differences from Paper
 
 | # | Difference | Paper | Ours |
 |---|---|---|---|
@@ -278,7 +265,7 @@ Averaged over 3 seeds. Adapter config: {1,2} (as stated in paper Section 4.5).
 
 ---
 
-## 8. Implementation Challenges
+## 7. Implementation Challenges
 
 ### MPS Compatibility
 Apple Silicon's MPS backend does not support HSV colour operations. CutPaste's colour jitter runs on CPU. A CPU copy of the training images is cached once before the loop — MPS→CPU transfer happens once, not once per gradient step.
@@ -297,27 +284,3 @@ The paper's Table 2 results use adapter layers {5,6} — confirmed by matching T
 
 ---
 
-## 9. File Structure
-
-```
-paper_implementation/
-├── src/
-│   ├── dataset.py      — MVTec AD train/test loaders, few-shot sampling
-│   ├── coreset.py      — Greedy farthest-point coreset sampling
-│   ├── backbone.py     — CLIP ViT-B/16 + adapter insertion + L2 normalisation
-│   ├── fmn.py          — Feature Matching Network (distance matrix + modulate layers)
-│   ├── cutpaste.py     — CutPaste augmentation with MPS-safe colour jitter
-│   ├── loss.py         — L_unsup (Eq. 9) and L_sup (Eqs. 6–8) loss functions
-│   ├── evaluate.py     — I-AUROC, P-AUROC, P-AP with pixel-level upsampling
-│   └── train.py        — Two-stage iterative training loop (Algorithm 1)
-├── experiments/
-│   ├── table2.py           — Few-shot k=1,2,4,8 (adapter {5,6})
-│   ├── table2_k4k8_56.py   — Targeted re-run for k=4,8 with correct {5,6} config
-│   ├── table3.py           — Adapter layer ablation ({1,2}, {3,4}, {5,6})
-│   └── table5.py           — Component ablation (adapter {1,2} per paper)
-├── results/
-│   ├── table2.json     — Complete (all k values, adapter {5,6})
-│   ├── table3.json     — Complete
-│   └── table5.json     — Complete
-└── data/mvtec/         — 15 categories, 3629 train / 1725 test images
-```
